@@ -77,4 +77,57 @@ public class UsersControllerTest {
         resultActions.andExpect(MockMvcResultMatchers.status().isConflict())
                 .andExpect(MockMvcResultMatchers.content().string(Matchers.containsString(ShoppingConstant.USERNAME_CONFLICT)));
     }
+
+    @Test
+    void itShouldUpdateExistUser() throws Exception {
+        //Given
+        String input = JSON.convertToJSON(usersModel);
+        BDDMockito.given(usersService.findUsersByUsername(usersModel.getUsername())).willReturn(Optional.empty());
+        //When
+        ResultActions resultActions = this.mockMvc.perform(MockMvcRequestBuilders.put(ShoppingConstant.USER_CONTEXT)
+                        .contentType(MediaType.APPLICATION_JSON).content(input))
+                .andDo(MockMvcResultHandlers.print());
+        //Then
+        resultActions.andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(Matchers.containsString(ShoppingConstant.USER_UPDATED)));
+    }
+
+    @Test
+    void itShouldNotUpdateExistUser() throws Exception {
+        //Given
+        String input = JSON.convertToJSON(usersModel);
+        BDDMockito.given(usersService.findUsersByUsername(ArgumentMatchers.any())).willReturn(Optional.of(usersModel));
+        //When
+        ResultActions resultActions = this.mockMvc.perform(MockMvcRequestBuilders.put(ShoppingConstant.USER_CONTEXT)
+                        .contentType(MediaType.APPLICATION_JSON).content(input))
+                .andDo(MockMvcResultHandlers.print());
+        //Then
+        resultActions.andExpect(MockMvcResultMatchers.status().isConflict())
+                .andExpect(MockMvcResultMatchers.content().string(Matchers.containsString(ShoppingConstant.USERNAME_CONFLICT)));
+    }
+
+    @Test
+    void itShouldFindExistUser() throws Exception {
+        //Given
+        BDDMockito.given(usersService.getUsers(usersModel.getId())).willReturn(usersModel);
+        //When
+        ResultActions resultActions = this.mockMvc.perform(MockMvcRequestBuilders.
+                        get(ShoppingConstant.USER_CONTEXT + "/" + usersModel.getId()))
+                .andDo(MockMvcResultHandlers.print());
+        //Then
+        resultActions.andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(Matchers.containsString(ShoppingConstant.SUCCESS)));
+    }
+
+    @Test
+    void itShouldDeleteExistUser() throws Exception {
+        //Given
+        BDDMockito.given(usersService.deleteUsers(usersModel.getId())).willReturn(ShoppingConstant.SUCCESS);
+        //When
+        ResultActions resultActions = this.mockMvc.perform(MockMvcRequestBuilders.
+                        delete(ShoppingConstant.USER_CONTEXT + "/" + usersModel.getId()))
+                .andDo(MockMvcResultHandlers.print());
+        //Then
+        resultActions.andExpect(MockMvcResultMatchers.status().isOk());
+    }
 }

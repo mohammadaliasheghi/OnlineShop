@@ -18,6 +18,7 @@ public class ShoppingConstant {
     //MESSAGE
     public static String SUCCESS = "SUCCESS";
     public static final String USER_CREATED = "New User  successfully created";
+    public static final String USER_UPDATED = "Exist User  successfully updated";
     public static final String USERNAME_CONFLICT = "The username has already been registered ";
     public static final String TOKEN_URL = "http://localhost:9898/authentication/oauth/token";
     public static final String USER_INVALID = "Incorrect username/password supplied";

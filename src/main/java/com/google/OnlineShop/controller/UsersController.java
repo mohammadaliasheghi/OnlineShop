@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/api/users")
+@RequestMapping(value = ShoppingConstant.USER_CONTEXT)
 @RequiredArgsConstructor
 public class UsersController {
 
@@ -33,7 +33,7 @@ public class UsersController {
     public ResponseEntity<?> update(@RequestBody UsersModel usersModel) {
         if (usersService.findUsersByUsername(usersModel.getUsername()).isEmpty())
             return new ResponseEntity<>(
-                    new ResponseDto<>(ShoppingConstant.USER_CREATED,
+                    new ResponseDto<>(ShoppingConstant.USER_UPDATED,
                             usersService.updateUsers(usersModel)),
                     HttpStatus.OK);
         else

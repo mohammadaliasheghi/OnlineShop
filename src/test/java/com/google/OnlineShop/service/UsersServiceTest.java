@@ -6,6 +6,7 @@ import com.google.OnlineShop.app.model.UsersModel;
 import com.google.OnlineShop.app.repository.UsersRepository;
 import com.google.OnlineShop.app.service.UsersService;
 import com.google.OnlineShop.config.ShoppingConstant;
+import com.google.OnlineShop.exception.ResourceNotFoundException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,12 +57,11 @@ public class UsersServiceTest {
     protected void itShouldUpdateExistUser() {
         //Given
         Users entity = UsersMapper.get().modelToEntity(usersModel);
-        entity.setPhone("09361234567");
         Mockito.when(usersRepository.save(entity)).thenReturn(entity);
         //When
         UsersModel updatedUsers = usersService.updateUsers(usersModel);
         //Then
-        Assertions.assertThat(UsersMapper.get().entityToModel(entity)).isNotEqualTo(updatedUsers);
+        Assertions.assertThat(usersModel).isEqualTo(updatedUsers);
     }
 
     @Test
@@ -116,6 +116,19 @@ public class UsersServiceTest {
                 .assertThatThrownBy(() -> usersService.loadUserByUsername(usersModel.getUsername()))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessageContaining(ShoppingConstant.USER_INVALID);
+    }
+
+    @Test
+    void itShouldNotFoundUserById() {
+        //Given
+        BDDMockito.given(usersRepository
+                        .getById(usersModel.getId()))
+                .willReturn(null);
+        //When
+        //Then
+        Assertions
+                .assertThatThrownBy(() -> usersService.getUsers(usersModel.getId()))
+                .isInstanceOf(ResourceNotFoundException.class);
     }
 
 }
