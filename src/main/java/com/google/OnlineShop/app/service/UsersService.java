@@ -14,15 +14,34 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UsersService implements UserDetailsService {
 
     private final UsersRepository usersRepository;
 
+    @Transactional(readOnly = true)
+    public Optional<UsersModel> findUsersByUsername(String userName) {
+        Optional<Users> users = usersRepository.findUsersByUsername(userName);
+        return Optional.ofNullable(UsersMapper.get().entityToModel(users.orElse(null)));
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return usersRepository.getByUsername(username);
+        Optional<UsersModel> findUser = findUsersByUsername(username);
+        if (findUser.isEmpty())
+            throw new UsernameNotFoundException(ShoppingConstant.USER_INVALID);
+        return org.springframework.security.core.userdetails.User
+                .withUsername(username)
+                .password(findUser.get().getPassword())
+                .roles(ShoppingConstant.USER_WRITE_PRIVILEGE)
+                .accountExpired(false)
+                .accountLocked(false)
+                .credentialsExpired(false)
+                .disabled(false)
+                .build();
     }
 
     @Transactional(rollbackFor = Exception.class)

@@ -2,11 +2,12 @@ package com.google.OnlineShop.controller;
 
 import com.google.OnlineShop.app.model.UsersModel;
 import com.google.OnlineShop.app.service.UsersService;
+import com.google.OnlineShop.config.ShoppingConstant;
+import com.google.OnlineShop.util.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 @RestController
 @RequestMapping(value = "/api/users")
@@ -15,24 +16,40 @@ public class UsersController {
 
     private final UsersService usersService;
 
-    @PostMapping(value = "/create")
+    @PostMapping
     public ResponseEntity<?> create(@RequestBody UsersModel usersModel) {
-        return new ResponseEntity<>(usersService.createUsers(usersModel), HttpStatus.CREATED);
+        if (usersService.findUsersByUsername(usersModel.getUsername()).isEmpty())
+            return new ResponseEntity<>(
+                    new ResponseDto<>(ShoppingConstant.USER_CREATED,
+                            usersService.createUsers(usersModel)),
+                    HttpStatus.CREATED);
+        else
+            return new ResponseEntity<>(
+                    new ResponseDto<>(ShoppingConstant.USERNAME_CONFLICT),
+                    HttpStatus.CONFLICT);
     }
 
-    @PostMapping(value = "/update")
+    @PutMapping
     public ResponseEntity<?> update(@RequestBody UsersModel usersModel) {
-        return new ResponseEntity<>(usersService.updateUsers(usersModel), HttpStatus.OK);
+        if (usersService.findUsersByUsername(usersModel.getUsername()).isEmpty())
+            return new ResponseEntity<>(
+                    new ResponseDto<>(ShoppingConstant.USER_CREATED,
+                            usersService.updateUsers(usersModel)),
+                    HttpStatus.OK);
+        else
+            return new ResponseEntity<>(
+                    new ResponseDto<>(ShoppingConstant.USERNAME_CONFLICT),
+                    HttpStatus.CONFLICT);
     }
 
-    @PostMapping(value = "/get/{id}")
+    @GetMapping(value = "{id}")
     public ResponseEntity<?> get(@PathVariable Long id) {
-        return new ResponseEntity<>(usersService.getUsers(id), HttpStatus.OK);
+        return new ResponseEntity<>(new ResponseDto<>(ShoppingConstant.SUCCESS, usersService.getUsers(id)), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/delete/{id}")
+    @DeleteMapping(value = "{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) throws Exception {
-        return new ResponseEntity<>(usersService.deleteUsers(id), HttpStatus.OK);
+        return new ResponseEntity<>(new ResponseDto<>(usersService.deleteUsers(id)), HttpStatus.OK);
     }
 
 }

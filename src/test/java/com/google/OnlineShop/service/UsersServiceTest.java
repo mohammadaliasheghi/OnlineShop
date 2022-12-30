@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.Optional;
 
@@ -32,7 +33,7 @@ public class UsersServiceTest {
     protected void setUp() {
         usersModel = UsersModel.builder()
                 .id(ShoppingConstant.ID_TEST)
-                .username(ShoppingConstant.USER_TEST)
+                .username(ShoppingConstant.USERNAME_TEST)
                 .password(ShoppingConstant.PASS_TEST)
                 .phone(ShoppingConstant.PHONE_TEST)
                 .email(ShoppingConstant.EMAIL_TEST)
@@ -52,24 +53,36 @@ public class UsersServiceTest {
     }
 
     @Test
+    protected void itShouldUpdateExistUser() {
+        //Given
+        Users entity = UsersMapper.get().modelToEntity(usersModel);
+        entity.setPhone("09361234567");
+        Mockito.when(usersRepository.save(entity)).thenReturn(entity);
+        //When
+        UsersModel updatedUsers = usersService.updateUsers(usersModel);
+        //Then
+        Assertions.assertThat(UsersMapper.get().entityToModel(entity)).isNotEqualTo(updatedUsers);
+    }
+
+    @Test
     protected void itShouldLoadUserByUserName() {
         //Given
         Users findUser = UsersMapper.get().modelToEntity(usersModel);
-        BDDMockito.given(usersRepository.getByUsername(usersModel.getUsername())).willReturn(findUser);
+        BDDMockito.given(usersRepository.findUsersByUsername(usersModel.getUsername())).willReturn(Optional.of(findUser));
         //When
-        UserDetails returnUser = usersService.loadUserByUsername(usersModel.getUsername());
+        UserDetails details = usersService.loadUserByUsername(usersModel.getUsername());
         //Then
-        Assertions.assertThat(returnUser).hasNoNullFieldsOrProperties();
+        Assertions.assertThat(details).hasNoNullFieldsOrProperties();
     }
 
     @Test
     protected void itShouldEmptyWhenUserNotFoundByUsername() {
         //Given
-        BDDMockito.given(usersRepository.getByUsername(usersModel.getUsername())).willReturn(null);
+        BDDMockito.given(usersRepository.findUsersByUsername(usersModel.getUsername())).willReturn(Optional.empty());
         //When
-        UserDetails returnUser = usersService.loadUserByUsername(usersModel.getUsername());
+        Optional<UsersModel> returnUser = usersService.findUsersByUsername(usersModel.getUsername());
         //Then
-        Assertions.assertThat(returnUser).isEqualTo(null);
+        Assertions.assertThat(returnUser).isEqualTo(Optional.empty());
     }
 
     @Test
@@ -89,6 +102,20 @@ public class UsersServiceTest {
         usersRepository.deleteById(usersModel.getId());
         //Then
         BDDMockito.then(usersRepository).should().deleteById(usersModel.getId());
+    }
+
+    @Test
+    void itShouldThrowExceptionWhenLoadUserByUserName() {
+        //Given
+        BDDMockito.given(usersRepository
+                        .findUsersByUsername(usersModel.getUsername()))
+                .willReturn(Optional.empty());
+        //When
+        //Then
+        Assertions
+                .assertThatThrownBy(() -> usersService.loadUserByUsername(usersModel.getUsername()))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessageContaining(ShoppingConstant.USER_INVALID);
     }
 
 }
