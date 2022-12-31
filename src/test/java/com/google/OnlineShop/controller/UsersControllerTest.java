@@ -1,7 +1,6 @@
 package com.google.OnlineShop.controller;
 
 import com.google.OnlineShop.app.model.UsersModel;
-import com.google.OnlineShop.app.repository.UsersRepository;
 import com.google.OnlineShop.app.service.UsersService;
 import com.google.OnlineShop.config.ShoppingConstant;
 import com.google.OnlineShop.util.JSON;
@@ -31,8 +30,6 @@ public class UsersControllerTest {
 
     @MockBean
     UsersService usersService;
-    @MockBean
-    UsersRepository usersRepository;
     @Autowired
     MockMvc mockMvc;
 

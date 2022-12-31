@@ -8,8 +8,9 @@ import java.util.List;
 @Component
 public record HashTag() {
 
-    private List<String> getTagList(StringBuilder text) {
+    public List<String> getTagList(StringBuilder text) {
         List<String> hashTagsList = new ArrayList<>();
+        text.append(" ");
         int i = 0;
         int count = 0;
         while (i < text.length()) {
@@ -21,8 +22,7 @@ public record HashTag() {
                         count += tag.length();
                         hashTagsList.add(tag);
                     }
-                    text = new StringBuilder(text.substring(count));
-                    i = 0;
+                    i = count;
                 }
             } else
                 i++;
